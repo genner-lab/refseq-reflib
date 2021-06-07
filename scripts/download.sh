@@ -1,4 +1,4 @@
-#!/usr/bin/env/ sh
+#!/usr/bin/env sh
 
 #################################################### 
 #################################################### 
@@ -15,6 +15,7 @@ file="temp/RELEASE_NUMBER"
 gbv=$(cat "$file")
 echo "Downloaded RefSeq version ""$gbv"
 wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/RefSeq-release"$gbv".catalog.gz -P temp
+md5sum temp/RefSeq-release"$gbv".catalog.gz
 gzip -cd temp/RefSeq-release"$gbv".catalog.gz | grep "mitochondrion" > temp/refseq.mitochondrion.cat.tsv
 rm temp/RefSeq-release"$gbv".catalog.gz
 
@@ -30,4 +31,4 @@ rm temp/mitochondrion.1.1.genomic.fna temp/mitochondrion.2.1.genomic.fna
 sed -i -e 's/ .*//g' temp/refseq.mitochondrion.genomic.fna
 
 # check 
-head temp/refseq.mitochondrion.genomic.fna
+#head temp/refseq.mitochondrion.genomic.fna
