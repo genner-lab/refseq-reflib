@@ -43,13 +43,15 @@ A pipeline written in bash and R to access and process mitochondrial reference l
 
 ### Annotate taxonomy
 
-* Annotate the mtDNA data with taxonomic information from [GBIF](https://www.gbif.org/).
+* Annotate the mtDNA data with taxonomic information from [GBIF](https://www.gbif.org/). May take 10 minutes or more to retrieve the taxonomic database, depending on internet connection speed.
 
-* The script writes out three files into 'references': (a) the annotated RefSeq sequences in tabular format ('refseq-annotated.csv'); (b) annotated RefSeq fasta sequences formatted for the sintax algorithm employed in vsearch ('refseq-annotated.fasta'); and (c) the same sintax fasta sequences, but for one random species selected per genus ('refseq-annotated-genera.fasta'). 
+* The script writes out three files into 'references': (a) the annotated RefSeq sequences in tabular format ('refseqVERSION-annotated-PRIMER.csv'); (b) annotated RefSeq fasta sequences formatted for the sintax algorithm employed in vsearch ('refseqVERSION-annotated-PRIMER.fasta'); and (c) the same sintax fasta sequences, but for one random species selected per genus ('refseqVERSION-annotated-genera-PRIMER.fasta'). 
 
 * The '-s' flag is the random number seed for the per genus subset.
 
-* `scripts/annotate.R -s 42`
+* The '-p' flag is the primer set. Currently supported sets for 12S are 'tele02', 'mifish-u', 'elas02', and 'mifish-u-mod'.
+
+* `scripts/annotate.R -s 42 -p tele02`
 
 ### Clean up (optional)
 
