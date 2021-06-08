@@ -10,6 +10,10 @@ option_list <- list(
 # set args
 opt <- parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
 
+# report
+writeLines("\n...\nExtracting nucleotides with hidden Markov models\n")
+Sys.sleep(3)
+
 # for testing
 #opt <- NULL
 #opt$primer <- "tele02"
@@ -26,8 +30,12 @@ if(opt$primer=="tele02") {
 # subset the marker of interest from the mtDNA dump
 mt.sub <- run_hmmer3(dir=here("temp"), infile="refseq.mitochondrion.genomic.fna", prefix=prefix, evalue="10", coords="env")
 
+# report
+writeLines("\n...\nFiltering and dereplicating\n")
+Sys.sleep(3)
+
 # read in the mito refseq catalogue
-mito.cat <- read_tsv(here("temp/refseq.mitochondrion.cat.tsv"),guess_max=999999,col_names=c("taxid","scientificName","accession","dir","status","len"))
+mito.cat <- suppressMessages(suppressWarnings(read_tsv(here("temp/refseq.mitochondrion.cat.tsv"),guess_max=999999,col_names=c("taxid","scientificName","accession","dir","status","len"))))
 
 # get accesssions from names
 accs <- names(mt.sub)
@@ -55,3 +63,6 @@ mito.cat.haps %<>% mutate(genus=str_split_fixed(scientificName," ",2)[,1])
 
 # write out
 mito.cat.haps %>% write_csv(file=here("temp/refseq.mitochondrion.cat.haplotypes.csv"))
+
+# report
+writeLines("\n...\nDereplicated sequences written to 'temp/refseq.mitochondrion.cat.haplotypes.csv'.\n")
