@@ -78,4 +78,4 @@ write.FASTA(refseq.fas.genus,file=here("references/refseq-annotated-genera.fasta
 td_disconnect()
 
 # report
-writeLines("\n...\nCleaned RefSeq reference libraries written to 'references'\n")
+writeLines("\n...\nCleaned RefSeq reference libraries written to 'references'.\n")
