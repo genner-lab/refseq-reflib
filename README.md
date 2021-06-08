@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/xxx.svg)](https://zenodo.org/badge/latestdoi/xxx)
 
 # refseq-reflib
-A pipeline written in bash and R to access and process mitochondrial reference library data from [NCBI RefSeq](https://www.ncbi.nlm.nih.gov/refseq/).
+A pipeline written in bash and R to access and process mitochondrial reference library data from [NCBI RefSeq](https://www.ncbi.nlm.nih.gov/refseq/). Currently supported 12S metabarcode markers are: 'tele02', 'mifish-u', 'elas02', and 'mifish-u-mod'.
 
 ### Setup
 
@@ -17,7 +17,7 @@ A pipeline written in bash and R to access and process mitochondrial reference l
 
 * Obtain correct R packages: `Rscript -e "renv::restore()"`
 
-### Check refseq version
+### Check RefSeq version
 
 * `curl ftp://ftp.ncbi.nlm.nih.gov/refseq/release/RELEASE_NUMBER`
 
@@ -45,7 +45,7 @@ A pipeline written in bash and R to access and process mitochondrial reference l
 
 * Annotate the mtDNA data with taxonomic information from [GBIF](https://www.gbif.org/).
 
-* The script writes out three files into `references`: (a) the annotated RefSeq sequences in tabular format (`refseq-annotated.csv`); (b) annotated RefSeq fasta sequences formatted for the sintax algorithm employed in vsearch (`refseq-annotated.fasta`); and (c) the same sintax fasta sequences, but for one random species selected per genus (`refseq-annotated-genera.fasta`). 
+* The script writes out three files into 'references': (a) the annotated RefSeq sequences in tabular format ('refseq-annotated.csv'); (b) annotated RefSeq fasta sequences formatted for the sintax algorithm employed in vsearch ('refseq-annotated.fasta'); and (c) the same sintax fasta sequences, but for one random species selected per genus ('refseq-annotated-genera.fasta'). 
 
 * The '-s' flag is the random number seed for the per genus subset.
 
