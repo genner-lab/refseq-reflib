@@ -5,7 +5,8 @@ source(here::here("scripts/funs-libs.R"))
 
 # get args
 option_list <- list( 
-    make_option(c("-s","--seed"), type="character")
+    make_option(c("-s","--seed"), type="character"),
+    make_option(c("-p","--primer"), type="character")
     )
 # set args
 opt <- parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
@@ -54,7 +55,7 @@ mito.cat.annotated <- mito.cat %>%
 
 # write out the table
 mito.cat.annotated %>% select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nMatches,matchTax,nucleotides) %>%
-    write_csv(here("references/refseq-annotated.csv"))
+    write_csv(here("references",paste0("refseq",version,"-annotated-",opt$primer,".csv")))
 
 # convert to fasta
 refseq.fas.all <- mito.cat.annotated %>% tab2fas(seqcol="nucleotides",namecol="label")
@@ -69,10 +70,10 @@ refseq.fas.genus <- mito.cat.annotated %>%
     tab2fas(seqcol="nucleotides",namecol="label")
 
 # write out
-write.FASTA(refseq.fas.all,file=here("references/refseq-annotated.fasta"))
+write.FASTA(refseq.fas.all,file=here("references",paste0("refseq",version,"-annotated-",opt$primer,".fasta")))
 
 # write out
-write.FASTA(refseq.fas.genus,file=here("references/refseq-annotated-genera.fasta"))
+write.FASTA(refseq.fas.genus,file=here("references",paste0("refseq",version,"-annotated-genera-",opt$primer,".fasta")))
 
 # disconnect from db
 td_disconnect()
