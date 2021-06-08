@@ -72,6 +72,3 @@ haps2fas <- function(df){
     df %<>% mutate(nMatches=sapply(sames, function(x) length(unique(x))), matchTax=sapply(sames, function(x) paste(unique(x),collapse=" | ")))
     return(df)
 }
-
-
-#    #df %<>% mutate(noms=paste(dbid,str_replace_all(scientificName," ","_"),nHaps,sep="|"))# %>% arrange(class,order,family,genus,sciNameValid,lengthFrag,dbid)
