@@ -14,10 +14,6 @@ opt <- parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
 writeLines("\n...\nExtracting nucleotides with hidden Markov models\n")
 Sys.sleep(3)
 
-# for testing
-#opt <- NULL
-#opt$primer <- "tele02"
-
 # make prefix
 if(opt$primer=="tele02") {
     prefix <- "12s.taberlet.noprimers"
@@ -56,7 +52,10 @@ mt.sub.df <- tibble(accession=names(mt.sub),nucleotides=mapply(paste,collapse=""
 mito.cat.nucs <- mito.cat %>% left_join(mt.sub.df,by="accession")
 
 # collapse by haplotypes
-mito.cat.haps <- haps2fas(mito.cat.nucs)
+mito.cat.haps <- mito.cat.nucs %>%
+    group_by(scientificName) %>% 
+    group_modify(~ hap_collapse_df(df=.x,lengthcol="length",nuccol="nucleotides",cores=1)) %>% 
+    ungroup() 
 
 # add the genus from sciName
 mito.cat.haps %<>% mutate(genus=str_split_fixed(scientificName," ",2)[,1])

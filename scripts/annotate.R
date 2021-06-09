@@ -11,6 +11,11 @@ option_list <- list(
 # set args
 opt <- parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
 
+# testing
+#opt <- NULL
+#opt$seed <- 42
+#opt$primer <- "tele02"
+
 writeLines("\n...\nObtaining taxonomy from GBIF\n")
 Sys.sleep(3)
 
@@ -41,6 +46,7 @@ gbif.taxonomy.filtered <- gbif.taxonomy %>%
     filter(n==1 | n>1 & kingdom=="Animalia") %>%
     select(-n) %>%
     arrange(kingdom,phylum,class,order,family,genus) %>% 
+    filter(!is.na(kingdom) & !is.na(phylum) & !is.na(class) & !is.na(order) & !is.na(family) & !is.na(genus)) %>%
     mutate(classified=TRUE)
 
 # annotate the mito.cat
@@ -54,7 +60,7 @@ mito.cat.annotated <- mito.cat %>%
 
 
 # write out the table
-mito.cat.annotated %>% select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nMatches,matchTax,nucleotides) %>%
+mito.cat.annotated %>% select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nucleotides) %>%
     write_csv(here("references",paste0("refseq",version,"-annotated-",opt$primer,".csv")))
 
 # convert to fasta
