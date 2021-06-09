@@ -5,7 +5,7 @@ source(here::here("scripts/funs-libs.R"))
 
 # get args
 option_list <- list( 
-    make_option(c("-s","--seed"), type="character"),
+    make_option(c("-s","--seed"), type="numeric"),
     make_option(c("-p","--primer"), type="character")
     )
 # set args
