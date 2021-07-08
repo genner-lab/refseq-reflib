@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/xxx.svg)](https://zenodo.org/badge/latestdoi/xxx)
+[![DOI](https://zenodo.org/badge/372479935.svg)](https://zenodo.org/badge/latestdoi/372479935)
 
 # refseq-reflib
 A pipeline written in bash and R to access and process mitochondrial reference library data from [NCBI RefSeq](https://www.ncbi.nlm.nih.gov/refseq/). Currently supported 12S metabarcode markers are: 'tele02', 'mifish-u', 'elas02', and 'mifish-u-mod'.
