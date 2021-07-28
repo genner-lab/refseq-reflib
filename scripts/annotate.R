@@ -26,6 +26,8 @@ version <- readLines(here("temp/RELEASE_NUMBER"))
 mito.cat <- suppressMessages(suppressWarnings(read_csv(file=here("temp/refseq.mitochondrion.cat.haplotypes.csv"))))
 
 # create a db from GBIF
+# temp fix to problem - https://github.com/ropensci/taxadb/issues/91
+Sys.setenv("CONTENTID_REGISTRIES"="https://hash-archive.thelio.carlboettiger.info")
 td_create(provider="gbif",dbdir=here("temp"),overwrite=TRUE,schema="dwc")
 
 # connect to db
