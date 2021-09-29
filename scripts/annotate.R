@@ -3,6 +3,7 @@
 # load libs/funs
 source(here::here("scripts/funs-libs.R"))
 
+
 # get args
 option_list <- list( 
     make_option(c("-s","--seed"), type="numeric"),
@@ -23,43 +24,41 @@ Sys.sleep(3)
 version <- readLines(here("temp/RELEASE_NUMBER"))
 
 # read in the mito refseq fasta
-mito.cat <- suppressMessages(suppressWarnings(read_csv(file=here("temp/refseq.mitochondrion.cat.haplotypes.csv"))))
+mito.cat <- suppressMessages(suppressWarnings(read_csv(file=here("temp/refseq.mitochondrion.cat.haplotypes.csv")))) %>% 
+    mutate(taxid=as.character(taxid))
 
 # create a db from GBIF
-# temp fix to problem - https://github.com/ropensci/taxadb/issues/91
-Sys.setenv("CONTENTID_REGISTRIES"="https://hash-archive.thelio.carlboettiger.info")
-td_create(provider="gbif",dbdir=here("temp"),overwrite=TRUE,schema="dwc")
+writeLines("\n...\nObtaining taxonomic names database from GBIF (may take up to an hour).\n")
+writeLines(paste("\n...\nLocal taxalight database location:\n",tl_dir()))
 
-# connect to db
-td_connect(dbdir=here("temp"))
+# create a taxalight database
+if(!file.exists(paste0(tl_dir(),"/gbif/",format(Sys.Date(),"%Y"),"/data.mdb"))){
+    tl_create("gbif")
+    #tl_create("ncbi")
+}
 
-# pull out all the db then subset genera
-gbif.taxonomy <- taxa_tbl(provider="gbif",schema="dwc") %>% 
-    collect() %>% 
-    filter(taxonRank=="genus" & taxonomicStatus=="accepted")
-
-# filter on our list of genera
-# where duplicates, select the animal
-gbif.taxonomy.filtered <- gbif.taxonomy %>%
-    filter(scientificName %in% unique(pull(mito.cat,genus))) %>% 
-    select(kingdom,phylum,class,order,family,genus) %>% 
-    distinct() %>% 
-    add_count(genus) %>% 
-    filter(n==1 | n>1 & kingdom=="Animalia") %>%
-    select(-n) %>%
-    arrange(kingdom,phylum,class,order,family,genus) %>% 
+# annotate mito.cat with gbif
+mito.cat.annotated <- tl(unique(pull(mito.cat,scientificName)),"gbif") %>%
+    as_tibble() %>% 
+    mutate(scientificName=paste(genus,specificEpithet)) %>%
+    distinct(kingdom,phylum,class,order,family,genus,scientificName) %>%
+    dplyr::right_join(mito.cat,by=c("scientificName","genus")) %>%
     filter(!is.na(kingdom) & !is.na(phylum) & !is.na(class) & !is.na(order) & !is.na(family) & !is.na(genus)) %>%
-    mutate(classified=TRUE)
-
-# annotate the mito.cat
-mito.cat.annotated <- mito.cat %>% 
-    left_join(gbif.taxonomy.filtered,by="genus") %>% 
-    filter(classified==TRUE) %>%
+    #filter(is.na(kingdom) | is.na(phylum) | is.na(class) | is.na(order) | is.na(family) | is.na(genus)) %>%
     mutate(refseqVersion=version) %>%
     arrange(kingdom,phylum,class,order,family,genus,scientificName) %>% 
     mutate(label=paste0(accession,";tax=k:",kingdom,",p:",phylum,",c:",class,",o:",order,",f:",family,",g:",genus,",s:",scientificName)) %>% 
     mutate(label=str_replace_all(label," ","_"))
 
+
+# ncbi provider
+#tl(paste("NCBI",pull(mito.cat,taxid),sep=":"),"ncbi") %>%
+#    as_tibble() %>% 
+#    distinct(taxonID,kingdom,phylum,class,order,family,genus,scientificName) %>%
+#    rename(taxid=taxonID) %>%
+#    mutate(taxid=str_replace_all(taxid,"NCBI:","")) %>%
+#    select(-scientificName,-genus) %>%
+#    dplyr::right_join(mito.cat,by="taxid") %>%
 
 # write out the table
 mito.cat.annotated %>% select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nucleotides) %>%
@@ -82,9 +81,6 @@ write.FASTA(refseq.fas.all,file=here("references",paste0("refseq",version,"-anno
 
 # write out
 write.FASTA(refseq.fas.genus,file=here("references",paste0("refseq",version,"-annotated-genera-",opt$primer,".fasta")))
-
-# disconnect from db
-td_disconnect()
 
 # report
 writeLines("\n...\nCleaned RefSeq reference libraries written to 'references'.\n")
