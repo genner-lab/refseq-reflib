@@ -75,11 +75,3 @@ scripts/extract.R -p tele02
 ```
 scripts/annotate.R -s 42 -p tele02
 ```
-
-### Clean up (optional)
-
-- The intermediate files for the taxonomic database are quite large, and it may be required to remove these to save disk space.
-
-```
-rm temp/duckdb
-```
