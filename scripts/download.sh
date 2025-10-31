@@ -13,7 +13,7 @@ sleep 3
 # download readme and DNA seqs
 wget -q https://ftp.ncbi.nlm.nih.gov/refseq/release/README -P temp
 wget -q https://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/mitochondrion.1.1.genomic.fna.gz -P temp
-wget -q https://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/mitochondrion.2.1.genomic.fna.gz -P temp
+#wget -q https://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/mitochondrion.2.1.genomic.fna.gz -P temp
 
 # download 
 wget -q https://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/RefSeq-release"$gbv".catalog.gz -P temp
@@ -24,11 +24,12 @@ rm temp/RefSeq-release"$gbv".catalog.gz
 
 # unzip
 gzip -d temp/mitochondrion.1.1.genomic.fna.gz 
-gzip -d temp/mitochondrion.2.1.genomic.fna.gz 
+#gzip -d temp/mitochondrion.2.1.genomic.fna.gz 
 
 # join
-cat temp/mitochondrion.1.1.genomic.fna temp/mitochondrion.2.1.genomic.fna > temp/refseq.mitochondrion.genomic.fna
-rm temp/mitochondrion.1.1.genomic.fna temp/mitochondrion.2.1.genomic.fna
+mv temp/mitochondrion.1.1.genomic.fna temp/refseq.mitochondrion.genomic.fna
+#cat temp/mitochondrion.1.1.genomic.fna temp/mitochondrion.2.1.genomic.fna > temp/refseq.mitochondrion.genomic.fna
+#rm temp/mitochondrion.1.1.genomic.fna temp/mitochondrion.2.1.genomic.fna
 
 # clean
 sed -i -e 's/ .*//g' temp/refseq.mitochondrion.genomic.fna

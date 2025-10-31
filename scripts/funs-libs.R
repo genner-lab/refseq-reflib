@@ -6,7 +6,7 @@ suppressMessages(library("parallel"))
 suppressMessages(library("tidyverse"))
 suppressMessages(library("magrittr"))
 suppressMessages(library("ape"))
-suppressMessages(library("taxalight"))
+suppressMessages(library("taxadb"))
 suppressMessages(library("optparse"))
 
 # function for making fasta files from tables

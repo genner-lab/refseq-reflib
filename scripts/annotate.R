@@ -3,14 +3,13 @@
 # load libs/funs
 source(here::here("scripts/funs-libs.R"))
 
-
 # get args
 option_list <- list( 
     make_option(c("-s","--seed"), type="numeric"),
     make_option(c("-p","--primer"), type="character")
     )
 # set args
-opt <- parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
+opt <- optparse::parse_args(OptionParser(option_list=option_list,add_help_option=FALSE))
 
 # testing
 #opt <- NULL
@@ -24,63 +23,52 @@ Sys.sleep(3)
 version <- readLines(here("temp/RELEASE_NUMBER"))
 
 # read in the mito refseq fasta
-mito.cat <- suppressMessages(suppressWarnings(read_csv(file=here("temp/refseq.mitochondrion.cat.haplotypes.csv")))) %>% 
-    mutate(taxid=as.character(taxid))
+mito.cat <- suppressMessages(suppressWarnings(readr::read_csv(file=here::here("temp/refseq.mitochondrion.cat.haplotypes.csv")))) |> 
+    dplyr::mutate(taxid=as.character(taxid))
 
 # create a db from GBIF
 writeLines("\n...\nObtaining taxonomic names database from GBIF (may take up to an hour).\n")
-writeLines(paste("\n...\nLocal taxalight database location:\n",tl_dir()))
+writeLines(paste("\n...\nLocal taxadb database location:\n",taxadb::taxadb_dir()))
 
-# create a taxalight database
-if(!file.exists(paste0(tl_dir(),"/gbif/",format(Sys.Date(),"%Y"),"/data.mdb"))){
-    tl_create("gbif")
-    #tl_create("ncbi")
-}
+taxadb::td_create(provider="gbif",overwrite=TRUE)
 
-# annotate mito.cat with gbif
-mito.cat.annotated <- tl(unique(pull(mito.cat,scientificName)),"gbif") %>%
-    as_tibble() %>% 
-    mutate(scientificName=paste(genus,specificEpithet)) %>%
-    distinct(kingdom,phylum,class,order,family,genus,scientificName) %>%
-    dplyr::right_join(mito.cat,by=c("scientificName","genus")) %>%
-    filter(!is.na(kingdom) & !is.na(phylum) & !is.na(class) & !is.na(order) & !is.na(family) & !is.na(genus)) %>%
-    #filter(is.na(kingdom) | is.na(phylum) | is.na(class) | is.na(order) | is.na(family) | is.na(genus)) %>%
-    mutate(refseqVersion=version) %>%
-    arrange(kingdom,phylum,class,order,family,genus,scientificName) %>% 
-    mutate(label=paste0(accession,";tax=k:",kingdom,",p:",phylum,",c:",class,",o:",order,",f:",family,",g:",genus,",s:",scientificName)) %>% 
-    mutate(label=str_replace_all(label," ","_"))
+# get ids 
+gbif.ids <- taxadb::get_ids(names=unique(dplyr::pull(mito.cat,scientificName)),provider="gbif")
 
+# get taxonomy
+gbif.tax <- gbif.ids |> taxadb::filter_id(provider="gbif") 
 
-# ncbi provider
-#tl(paste("NCBI",pull(mito.cat,taxid),sep=":"),"ncbi") %>%
-#    as_tibble() %>% 
-#    distinct(taxonID,kingdom,phylum,class,order,family,genus,scientificName) %>%
-#    rename(taxid=taxonID) %>%
-#    mutate(taxid=str_replace_all(taxid,"NCBI:","")) %>%
-#    select(-scientificName,-genus) %>%
-#    dplyr::right_join(mito.cat,by="taxid") %>%
+mito.cat.annotated <- gbif.tax |>
+    dplyr::distinct(kingdom,phylum,class,order,family,genus,scientificName) |> 
+    dplyr::right_join(mito.cat,by=c("scientificName","genus")) |>
+    dplyr::filter(!is.na(kingdom) & !is.na(phylum) & !is.na(class) & !is.na(order) & !is.na(family) & !is.na(genus)) |>
+    #filter(is.na(kingdom) | is.na(phylum) | is.na(class) | is.na(order) | is.na(family) | is.na(genus)) |>
+    dplyr::mutate(refseqVersion=version) |>
+    dplyr::arrange(kingdom,phylum,class,order,family,genus,scientificName) |>
+    dplyr::mutate(label=paste0(accession,";tax=k:",kingdom,",p:",phylum,",c:",class,",o:",order,",f:",family,",g:",genus,",s:",scientificName)) |> 
+    dplyr::mutate(label=stringr::str_replace_all(label," ","_"))
 
 # write out the table
-mito.cat.annotated %>% select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nucleotides) %>%
-    write_csv(here("references",paste0("refseq",version,"-annotated-",opt$primer,".csv")))
+mito.cat.annotated |> dplyr::select(refseqVersion,accession,kingdom,phylum,class,order,family,genus,scientificName,taxid,length,nHaps,nucleotides) |>
+    readr::write_csv(here("references",paste0("refseq",version,"-annotated-",opt$primer,".csv")))
 
 # convert to fasta
-refseq.fas.all <- mito.cat.annotated %>% tab2fas(seqcol="nucleotides",namecol="label")
+refseq.fas.all <- mito.cat.annotated |> tab2fas(seqcol="nucleotides",namecol="label")
 
 # make a genus only table
 set.seed(opt$seed)
-refseq.fas.genus <- mito.cat.annotated %>% 
-    group_by(genus) %>% 
-    dplyr::slice_sample(n=1) %>% 
-    ungroup() %>% 
-    arrange(kingdom,phylum,class,order,family,genus,scientificName) %>% 
+refseq.fas.genus <- mito.cat.annotated |> 
+    dplyr::group_by(genus) |> 
+    dplyr::slice_sample(n=1) |> 
+    dplyr::ungroup() |> 
+    dplyr::arrange(kingdom,phylum,class,order,family,genus,scientificName) |> 
     tab2fas(seqcol="nucleotides",namecol="label")
 
 # write out
-write.FASTA(refseq.fas.all,file=here("references",paste0("refseq",version,"-annotated-",opt$primer,".fasta")))
+ape::write.FASTA(refseq.fas.all,file=here::here("references",paste0("refseq",version,"-annotated-",opt$primer,".fasta")))
 
 # write out
-write.FASTA(refseq.fas.genus,file=here("references",paste0("refseq",version,"-annotated-genera-",opt$primer,".fasta")))
+ape::write.FASTA(refseq.fas.genus,file=here::here("references",paste0("refseq",version,"-annotated-genera-",opt$primer,".fasta")))
 
 # report
 writeLines("\n...\nCleaned RefSeq reference libraries written to 'references'.\n")
